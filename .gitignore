@@ -1,0 +1,5 @@
+node_modules/
+dist/
+
+# I like living on the edge
+package-lock.json
