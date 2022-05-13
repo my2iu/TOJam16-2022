@@ -1,6 +1,8 @@
 import 'phaser';
 import {GameScene} from './game';
 
+const DEBUG = true;
+
 export default class TitleScene extends Phaser.Scene
 {
     constructor ()
@@ -31,7 +33,17 @@ const config : Phaser.Types.Core.GameConfig = {
         width: 600,
         height: 800
     },
-    
+    physics: {
+        default: 'matter',
+        matter: {
+            debug: DEBUG ? {
+                showAxes: true,
+                showAngleIndicator: true,
+                showCollisions: true
+            } : false,
+            //enableSleeping: true
+        }
+    },
     scene: [TitleScene, GameScene]
 };
 
