@@ -6,6 +6,14 @@ export class GameScene extends Phaser.Scene
     scenery: MatterJS.BodyType | undefined;
     ball: MatterJS.BodyType | undefined;
 
+    // For showing feedback on 
+    forceCircle : Phaser.GameObjects.Arc | undefined;
+
+    // Tracks information about user touches on screen
+    pointerdown = false;
+    pointerStartTime = 0;
+    forceCircleStartStrokeWidth = 0;
+
     constructor ()
     {
         super('GameScene');
@@ -75,6 +83,8 @@ export class GameScene extends Phaser.Scene
         // Load up the map
         this.buildFromTiledMap('map');
 
+        this.forceCircle = this.add.circle(0, 0).setVisible(false);
+
         // Load in map data
         // const map = this.make.tilemap({ key: 'map' });
         // const backgroundImages = map.getTileset('BackgroundImages');
@@ -94,6 +104,7 @@ export class GameScene extends Phaser.Scene
         this.ball = this.matter.add.circle(50, 50, 10, {
             friction: 0.01,
             frictionStatic: 0
+
         });
 
         // this.scenery = this.matter.add.fromVertices(250, 700,  
@@ -105,25 +116,34 @@ export class GameScene extends Phaser.Scene
         // this.cameras.main.setBounds(-2000, -2000, 2000, 2000);
         // this.cameras.main.startFollow(this.ball);
 
-        let pointerdown = false;
-        let pointerStartTime = 0;
         this.input.on('pointerdown', (pointer : Phaser.Input.Pointer) => {
-            pointerdown = true;
-            pointerStartTime = this.time.now
+            this.pointerdown = true;
+            this.pointerStartTime = this.time.now
         });
         this.input.on('pointerup', (pointer : Phaser.Input.Pointer) => {
-            if (!pointerdown) return;
-            pointerdown = false;
+            if (!this.pointerdown) return;
+            this.pointerdown = false;
             let deltaX = pointer.worldX - this.ball?.position.x!;
             let deltaY = pointer.worldY - this.ball?.position.y!;
             let force = 0.01;
+            const maxForce = 0.05;
+            const minForce = 0.003;
+            const pointerHoldTime = 500;
             // The longer the finger is pressed down, the stronger the force (500ms for full force)
-            force = force * (this.time.now - pointerStartTime) / 500 ;
-            if (force < 0.003) force = 0.003;
-            if (force > 0.05) force = 0.05;
+            force = force * (this.time.now - this.pointerStartTime) / pointerHoldTime;
+            if (force < minForce) force = minForce;
+            if (force > maxForce) force = maxForce;
             // The more distant the finger is from the ball, the weaker the force
             force = force * (1 - Phaser.Math.Clamp((Math.sqrt(deltaY * deltaY + deltaX * deltaX) - 50) / 200, 0, 1));
             this.matter.applyForceFromAngle(this.ball!, force, Math.atan2(-deltaY, -deltaX));
+            // Set up animation of the force circle
+            this.pointerStartTime = this.time.now;
+            this.forceCircle?.setPosition(pointer.worldX, pointer.worldY);
+            this.forceCircleStartStrokeWidth = Phaser.Math.Linear(1, 100, Phaser.Math.Clamp((this.time.now - this.pointerStartTime) / pointerHoldTime, 0, 1));
+            this.forceCircleStartStrokeWidth = 5;
+            this.forceCircle?.setRadius(0);
+            this.forceCircle?.setStrokeStyle(this.forceCircleStartStrokeWidth, 0x000088);
+            this.forceCircle?.setVisible(true);
         });
     }
 
@@ -132,6 +152,19 @@ export class GameScene extends Phaser.Scene
         this.cameras.main.scrollY = this.ball?.position.y! - this.game.scale.height / 2;
         this.cameras.main.scrollX = this.ball?.position.x! - this.game.scale.width / 2;
 
-
+        // Animate the force circle if it is showing
+        if (this.forceCircle?.visible)
+        {
+            if (!this.pointerdown) {
+                const expandDuration = 150;
+                if (time - this.pointerStartTime < expandDuration) {
+                    let lerp = (time - this.pointerStartTime) / expandDuration;
+                    this.forceCircle?.setRadius(lerp * 100);
+                    this.forceCircle?.setAlpha(1 - lerp);
+                    this.forceCircle?.setStrokeStyle(Phaser.Math.Linear(this.forceCircleStartStrokeWidth, 0, lerp), 0x000088);
+                } else
+                    this.forceCircle?.setVisible(false);
+            }
+        }
     }
 }
