@@ -12,6 +12,7 @@ export class GameScene extends Phaser.Scene {
     pointerdown = false;
     pointerStartTime = 0;
     forceCircleStartStrokeWidth = 0;
+    forceCircleMaxRadius = 0;
 
     constructor() {
         super('GameScene');
@@ -100,7 +101,7 @@ export class GameScene extends Phaser.Scene {
         // Some instruction text
         const instructionText = this.add.text(0, 0,
             'Tap the screen\nto move the ball\n\n'
-            + 'Tap closer to the ball\nto move it faster',
+            + 'Tap closer to the ball\nto move it less',
             {
                 fontSize: '30px',
                 color: 'black',
@@ -151,12 +152,12 @@ export class GameScene extends Phaser.Scene {
 
             let angle = Math.atan2(-deltaY, -deltaX);
             const maxPush = 15;
-            // The more distant the finger is from the ball, the weaker the force
+            const minPush = 1;
+            // The closer the finger is from the ball, the stronger the force
             const minForceDistance = 50;
             const maxForceDistance = 200;
-            const pushAmount = Phaser.Math.Clamp(Math.sqrt(deltaY * deltaY + deltaX * deltaX), minForceDistance, maxForceDistance);
-            const push = Phaser.Math.Linear(maxPush, 0,
-                ((pushAmount - minForceDistance) / (maxForceDistance - minForceDistance)));
+            const pushAmount = (Phaser.Math.Clamp(Math.sqrt(deltaY * deltaY + deltaX * deltaX), minForceDistance, maxForceDistance) - minForceDistance)  / (maxForceDistance - minForceDistance);
+            const push = Phaser.Math.Linear(minPush, maxPush, pushAmount);
             let xSpeed = Math.cos(angle) * push;
             let ySpeed = Math.sin(angle) * push;
             if (Math.sign(xSpeed) == Math.sign(this.ball?.body.velocity.x!)
@@ -188,8 +189,20 @@ export class GameScene extends Phaser.Scene {
             // this.forceCircleStartStrokeWidth = Phaser.Math.Linear(1, 100, Phaser.Math.Clamp((this.time.now - this.pointerStartTime) / pointerHoldTime, 0, 1));
             this.forceCircleStartStrokeWidth = 5;
             this.forceCircle?.setRadius(0);
+            this.forceCircle?.setAlpha(1);
             this.forceCircle?.setStrokeStyle(this.forceCircleStartStrokeWidth, 0x000088);
             this.forceCircle?.setVisible(true);
+            this.tweens.add({
+                targets: this.forceCircle!,
+                ease: 'Linear',
+                alpha: 0,
+                repeat: 0,
+                radius: Math.sqrt(deltaX * deltaX + deltaY * deltaY),
+                duration: 150,
+                onComplete: () => {
+                    this.forceCircle?.setVisible(false);
+                }
+            });
         });
     }
 
@@ -201,14 +214,14 @@ export class GameScene extends Phaser.Scene {
         // Animate the force circle if it is showing
         if (this.forceCircle?.visible) {
             if (!this.pointerdown) {
-                const expandDuration = 150;
-                if (time - this.pointerStartTime < expandDuration) {
-                    let lerp = (time - this.pointerStartTime) / expandDuration;
-                    this.forceCircle?.setRadius(lerp * 100);
-                    this.forceCircle?.setAlpha(1 - lerp);
-                    this.forceCircle?.setStrokeStyle(Phaser.Math.Linear(this.forceCircleStartStrokeWidth, 0, lerp), 0x000088);
-                } else
-                    this.forceCircle?.setVisible(false);
+            //     const expandDuration = 150;
+            //     if (time - this.pointerStartTime < expandDuration) {
+            //         let lerp = (time - this.pointerStartTime) / expandDuration;
+            //         this.forceCircle?.setRadius(lerp * 100);
+            //         this.forceCircle?.setAlpha(1 - lerp);
+            //         this.forceCircle?.setStrokeStyle(Phaser.Math.Linear(this.forceCircleStartStrokeWidth, 0, lerp), 0x000088);
+            //     } else
+            //         this.forceCircle?.setVisible(false);
             }
         }
     }
