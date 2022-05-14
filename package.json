@@ -5,6 +5,7 @@
     "main": "src/game.ts",
     "scripts": {
         "dev": "vite",
+        "devhost": "vite --host",
         "build": "vite build",
         "serve": "vite preview"
     },

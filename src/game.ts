@@ -89,7 +89,7 @@ export class GameScene extends Phaser.Scene
 
 
         // Show some random things on the screen
-        var text = this.add.text(0, 0, 'In Game', {fontSize: '30px', color: 'black', fontFamily: 'sans-serif'});
+        var text = this.add.text(0, 0, 'In Game', {fontSize: '30px', color: 'black', fontFamily: 'sans-serif'}).setScrollFactor(0);
 
         this.ball = this.matter.add.circle(50, 50, 10, {
             friction: 0.01,
@@ -101,8 +101,16 @@ export class GameScene extends Phaser.Scene
         //     {
         //         isStatic: true
         //     });
+
+        // this.cameras.main.setBounds(-2000, -2000, 2000, 2000);
+        // this.cameras.main.startFollow(this.ball);
     }
 
     update(time: number, delta: number): void {
+        // Scroll camera so that it is centered on the player
+        this.cameras.main.scrollY = this.ball?.position.y! - this.game.scale.height / 2;
+        this.cameras.main.scrollX = this.ball?.position.x! - this.game.scale.width / 2;
+
+
     }
 }
