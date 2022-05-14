@@ -104,6 +104,27 @@ export class GameScene extends Phaser.Scene
 
         // this.cameras.main.setBounds(-2000, -2000, 2000, 2000);
         // this.cameras.main.startFollow(this.ball);
+
+        let pointerdown = false;
+        let pointerStartTime = 0;
+        this.input.on('pointerdown', (pointer : Phaser.Input.Pointer) => {
+            pointerdown = true;
+            pointerStartTime = this.time.now
+        });
+        this.input.on('pointerup', (pointer : Phaser.Input.Pointer) => {
+            if (!pointerdown) return;
+            pointerdown = false;
+            let deltaX = pointer.worldX - this.ball?.position.x!;
+            let deltaY = pointer.worldY - this.ball?.position.y!;
+            let force = 0.01;
+            // The longer the finger is pressed down, the stronger the force (500ms for full force)
+            force = force * (this.time.now - pointerStartTime) / 500 ;
+            if (force < 0.003) force = 0.003;
+            if (force > 0.05) force = 0.05;
+            // The more distant the finger is from the ball, the weaker the force
+            force = force * (1 - Phaser.Math.Clamp((Math.sqrt(deltaY * deltaY + deltaX * deltaX) - 50) / 200, 0, 1));
+            this.matter.applyForceFromAngle(this.ball!, force, Math.atan2(-deltaY, -deltaX));
+        });
     }
 
     update(time: number, delta: number): void {
