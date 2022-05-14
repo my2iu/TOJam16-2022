@@ -30,7 +30,7 @@ const config : Phaser.Types.Core.GameConfig = {
     backgroundColor: '#fff',
     scale: {
         mode: Phaser.Scale.FIT,
-        width: 600,
+        width: 480,
         height: 800
     },
     physics: {
