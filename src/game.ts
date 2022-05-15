@@ -24,6 +24,31 @@ export class GameScene extends Phaser.Scene {
         this.load.json('map', 'assets/map.tmj');
         this.load.image('background.png', 'assets/background.png');
         this.load.image('ball', 'assets/images/ball.png');
+        this.load.image('images/bottom.png', 'assets/images/bottom.png');
+        this.load.image('images/round.png', 'assets/images/round.png');
+        this.load.image('images/skull.png', 'assets/images/skull.png');
+    }
+
+    private makeStaticObjectFromTiledMap(objJson: any, tile: tiled.ObjectTile) {
+        // Create an image for each background object
+        let gid = objJson.gid as number;
+        let x = objJson.x as number;
+        let y = objJson.y as number;
+        let h = objJson.height as number;
+        let w = objJson.width as number;
+        this.add.image(x + w / 2, y - h / 2, tile.image);
+
+        // Create a collision object too
+        if (tile.collision) {
+            tile.collision.forEach((collisionPoly) => {
+                let body = tiled.makeBodyFromCollisionObject(x, y, w, h, collisionPoly,
+                    this.matter,
+                    {
+                        isStatic: true
+                    });
+            });
+        }
+
     }
 
     private buildFromTiledMap(key: string) {
@@ -36,25 +61,9 @@ export class GameScene extends Phaser.Scene {
         // Read background layer
         const backgroundLayer = json['layers'][0];
         (backgroundLayer.objects as any[]).forEach((objJson) => {
-            // Create an image for each background object
             let gid = objJson.gid as number;
-            let x = objJson.x as number;
-            let y = objJson.y as number;
-            let h = objJson.height as number;
-            let w = objJson.width as number;
             let tile = backgroundTiles[gid];
-            this.add.image(x + w / 2, y - h / 2, tile.image);
-
-            // Create a collision object too
-            if (tile.collision) {
-                tile.collision.forEach((collisionPoly) => {
-                    let body = tiled.makeBodyFromCollisionObject(x, y, w, h, collisionPoly,
-                        this.matter,
-                        {
-                            isStatic: true
-                        });
-                });
-            }
+            this.makeStaticObjectFromTiledMap(objJson, tile);
         });
 
         // Read the object layer
@@ -71,6 +80,10 @@ export class GameScene extends Phaser.Scene {
                         restitution: 0.75
                     });
                 }
+            } else if (objJson.gid) {
+                let gid = objJson.gid as number;
+                let tile = backgroundTiles[gid];
+                this.makeStaticObjectFromTiledMap(objJson, tile);
             }
         });
     }

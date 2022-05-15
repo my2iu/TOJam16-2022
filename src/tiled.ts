@@ -104,10 +104,10 @@ export function makeBodyFromCollisionObject(
         //     });
         return body;
     } else if (obj instanceof CollisionCircle) {
-        let body = matter.add.circle(x, y, w / 2);
+        let body = matter.add.circle(x + w / 2, y - w / 2, w / 2, options);
         return body;
     } else {
-        let body = matter.add.rectangle((x + x + w) / 2, (y + y + h) / 2, w, h);
+        let body = matter.add.rectangle((x + x + w) / 2, (y + y - h) / 2, w, h, options);
     }
 }
 
@@ -127,6 +127,10 @@ export function loadTiledTileset(json: any, matter?: Phaser.Physics.Matter.Matte
                 let y = objJson.y as number;
                 let vectorVals: number[] = [];
                 if (objJson.polygon) {
+                    // When importing polygons, do NOT use concave polygons. Although
+                    // Matter can decompose concave polygons into convex ones, it ends up
+                    // moving the vertices around during the decomposition, and shapes
+                    // will no longer line up with other shapes afterwards.
                     (objJson.polygon as { x: number, y: number }[]).forEach((vertex) => {
                         vectorVals.push(vertex.x);
                         vectorVals.push(vertex.y);
