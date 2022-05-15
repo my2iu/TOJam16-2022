@@ -32,7 +32,9 @@ export class GameScene extends Phaser.Scene {
         this.load.image('background.png', 'assets/background.png');
         this.load.image('ball', 'assets/images/ball.png');
         this.load.image('images/bottom.png', 'assets/images/bottom.png');
-        this.load.image('images/round.png', 'assets/images/round.png');
+        this.load.spritesheet('images/round.png', 'assets/images/round.png', {
+            frameWidth: 90
+        });
         this.load.image('images/skull.png', 'assets/images/skull.png');
     }
 
@@ -115,6 +117,10 @@ export class GameScene extends Phaser.Scene {
                     let body = this.makeStaticCollidingImageObjectFromTiledMap(objJson, tile);
                     //@ts-ignore
                     body.setOnCollideWith(this.ball, (ball, pair) => {
+                        body.setFrame(1);
+                        this.time.delayedCall(75, () => {
+                            body.setFrame(0);
+                        });
                         let ballSprite: Phaser.Physics.Matter.Sprite = ball.gameObject;
                         let deltaX = ballSprite.x - body.x;
                         let deltaY = ballSprite.y - body.y;
