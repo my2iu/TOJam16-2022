@@ -9,6 +9,7 @@ type CustomTileProperties = {
 export class GameScene extends Phaser.Scene {
     scenery: MatterJS.BodyType | undefined;
     ball: Phaser.Physics.Matter.Sprite | undefined;
+    instructionText: Phaser.GameObjects.Text | undefined;
 
     // For showing feedback on 
     forceCircle: Phaser.GameObjects.Arc | undefined;
@@ -69,7 +70,7 @@ export class GameScene extends Phaser.Scene {
         let matterBody = tiled.makeBodyFromCollisionObject(x, y, w, h, collisionShape,
             this.matter,
             {
-                isStatic: true
+                // isStatic: true
             });
         body.setBody(matterBody!);
         return body;
@@ -104,8 +105,9 @@ export class GameScene extends Phaser.Scene {
                     let body = this.makeStaticCollidingImageObjectFromTiledMap(objJson, tile);
                     //@ts-ignore
                     body.setOnCollideWith(this.ball, () => {
-                        console.log('collision');
-
+                        this.scene.launch('gameover');
+                        this.instructionText?.setVisible(false);
+                        this.scene.pause();
                     });
                 } else {
                     this.makeStaticObjectFromTiledMap(objJson, tile);
@@ -140,7 +142,7 @@ export class GameScene extends Phaser.Scene {
         this.forceCircle = this.add.circle(0, 0).setVisible(false);
 
         // Some instruction text
-        const instructionText = this.add.text(0, 0,
+        this.instructionText = this.add.text(0, 0,
             'Tap the screen\nto move the ball\n\n'
             + 'Tap closer to the ball\nto move it less',
             {
@@ -150,9 +152,9 @@ export class GameScene extends Phaser.Scene {
                 align: 'center',
                 shadow: { blur: 5, color: 'rgba(128, 128, 128, 0.5)', fill: true }
             }).setScrollFactor(0);
-        instructionText.setPosition(240 - instructionText.width / 2, 100);
+        this.instructionText.setPosition(240 - this.instructionText.width / 2, 100);
         this.time.delayedCall(5000, () => {
-            instructionText.setVisible(false);
+            this.instructionText?.setVisible(false);
         });
 
         // Load in map data

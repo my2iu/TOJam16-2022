@@ -3,7 +3,7 @@ import { GameScene } from './game';
 
 const DEBUG = true;
 
-export default class TitleScene extends Phaser.Scene {
+export class TitleScene extends Phaser.Scene {
     constructor() {
         super('title');
     }
@@ -27,6 +27,36 @@ export default class TitleScene extends Phaser.Scene {
     }
 }
 
+export class GameOverOverlayScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'gameover' });
+    }
+
+    preload() {
+    }
+
+    create() {
+        var text = this.add.text(0, 0, 'Game Over',
+            {
+                fontSize: '30px',
+                color: 'red',
+                fontFamily: 'sans-serif',
+                fontStyle: 'bold',
+                align: 'center',
+                shadow: {
+                    blur: 5, color: 'rgba(128, 128, 128, 0.5)',
+                    fill: true
+                }
+            }).setScrollFactor(0);
+        text.setPosition(this.game.scale.width / 2 - text.width / 2, this.game.scale.height / 2 - text.height / 2);
+
+        text.setInteractive();
+        text.on('pointerdown', () => {
+            this.scene.start('GameScene');
+        });
+    }
+}
+
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     backgroundColor: '#fff',
@@ -46,7 +76,7 @@ const config: Phaser.Types.Core.GameConfig = {
             //enableSleeping: true
         }
     },
-    scene: [TitleScene, GameScene]
+    scene: [TitleScene, GameScene, GameOverOverlayScene]
 };
 
 const game = new Phaser.Game(config);
