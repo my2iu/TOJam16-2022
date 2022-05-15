@@ -92,11 +92,12 @@ export function makeBodyFromCollisionObject(
         //@ts-ignore
         // let rawVertices = matter.vertices.fromPath(obj.path);
         // let centroid = matter.vertices.centre(rawVertices);
-        let body = matter.add.fromVertices(
+        let body = matter.bodies.fromVertices(
             // x + w / 2, y - h / 2,
             x + obj.centerX,
             y - h + obj.centerY,
-            obj.path,
+            //@ts-ignore
+            matter.vertices.fromPath(obj.path),
             options);
         // We need to know the center of mass in order to
         // adjust its position on-screen
@@ -107,10 +108,13 @@ export function makeBodyFromCollisionObject(
         //     });
         return body;
     } else if (obj instanceof CollisionCircle) {
-        let body = matter.add.circle(x + w / 2, y - w / 2, w / 2, options);
+        //@ts-ignore
+        let body = matter.bodies.circle(x + w / 2, y - w / 2, w / 2, options);
         return body;
     } else {
-        let body = matter.add.rectangle((x + x + w) / 2, (y + y - h) / 2, w, h, options);
+        //@ts-ignore
+        let body = matter.bodies.rectangle((x + x + w) / 2, (y + y - h) / 2, w, h, options);
+        return body;
     }
 }
 

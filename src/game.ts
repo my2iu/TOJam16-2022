@@ -52,6 +52,7 @@ export class GameScene extends Phaser.Scene {
                     {
                         isStatic: true
                     });
+                this.matter.world.add(body);
             });
         }
         return body;
@@ -70,7 +71,7 @@ export class GameScene extends Phaser.Scene {
         let matterBody = tiled.makeBodyFromCollisionObject(x, y, w, h, collisionShape,
             this.matter,
             {
-                // isStatic: true
+                isStatic: true
             });
         body.setBody(matterBody!);
         return body;
