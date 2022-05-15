@@ -1,31 +1,33 @@
 import 'phaser';
-import {GameScene} from './game';
+import { GameScene } from './game';
 
 const DEBUG = true;
 
-export default class TitleScene extends Phaser.Scene
-{
-    constructor ()
-    {
+export default class TitleScene extends Phaser.Scene {
+    constructor() {
         super('title');
     }
 
-    preload ()
-    {
+    preload() {
+        this.load.image('title', 'assets/images/title.png');
     }
 
-    create ()
-    {
-        var text = this.add.text(0, 0, 'Start', {fontSize: '30px', color: 'black', fontFamily: 'sans-serif'});
-        text.setInteractive();
-        text.on('pointerdown', () => {
+    create() {
+        let screen = this.add.image(240, 400, 'title', 0);
+        screen.setInteractive();
+        screen.on('pointerup', () => {
             this.scene.start('GameScene');
         });
+        // var text = this.add.text(0, 0, 'Start', { fontSize: '30px', color: 'black', fontFamily: 'sans-serif' });
+        // text.setInteractive();
+        // text.on('pointerdown', () => {
+        //     this.scene.start('GameScene');
+        // });
 
     }
 }
 
-const config : Phaser.Types.Core.GameConfig = {
+const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     backgroundColor: '#fff',
     scale: {
