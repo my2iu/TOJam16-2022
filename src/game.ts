@@ -32,6 +32,7 @@ export class GameScene extends Phaser.Scene {
         this.load.image('background.png', 'assets/background.png');
         this.load.image('ball', 'assets/images/ball.png');
         this.load.image('images/bottom.png', 'assets/images/bottom.png');
+        this.load.image('images/bumperforest.png', 'assets/images/bumperforest.png');
         this.load.image('images/flappybird.png', 'assets/images/flappybird.png');
         this.load.image('images/required_goatonapole.png', 'assets/images/required_goatonapole.png');
         this.load.spritesheet('images/round.png', 'assets/images/roundsheet.png', {

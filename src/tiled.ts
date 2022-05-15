@@ -122,6 +122,10 @@ export function makeBodyFromCollisionObject(
         //@ts-ignore
         let body = matter.bodies.circle(x + obj.centerX * scale, y - obj.centerY * scale, obj.radius * scale, options);
         return body;
+    } else if (obj instanceof CollisionRectangle) {
+        //@ts-ignore
+        let body = matter.bodies.rectangle(x + obj.centerX, y - h + obj.centerY, obj.width, obj.height, options);
+        return body;
     } else {
         //@ts-ignore
         let body = matter.bodies.rectangle((x + x + w) / 2, (y + y - h) / 2, w, h, options);
