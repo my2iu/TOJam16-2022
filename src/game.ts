@@ -31,7 +31,7 @@ export class GameScene extends Phaser.Scene {
 
         // Get reference to image collection tilesets
         const backgroundImagesTiles = json['tilesets'][0];
-        const backgroundTiles: tiled.ObjectTile[] = tiled.loadTiledTileset(backgroundImagesTiles);
+        const backgroundTiles: tiled.ObjectTile[] = tiled.loadTiledTileset(backgroundImagesTiles, this.matter);
 
         // Read background layer
         const backgroundLayer = json['layers'][0];
@@ -48,20 +48,10 @@ export class GameScene extends Phaser.Scene {
             // Create a collision object too
             if (tile.collision) {
                 tile.collision.forEach((collisionPoly) => {
-                    let body = this.matter.add.fromVertices(
-                        // x + w / 2, y - h / 2,
-                        0,
-                        0,
-                        collisionPoly.path,
+                    let body = tiled.makeBodyFromCollisionObject(x, y, w, h, collisionPoly,
+                        this.matter,
                         {
                             isStatic: true
-                        });
-                    // We need to know the center of mass in order to
-                    // adjust its position on-screen
-                    this.matter.body.setPosition(body,
-                        {
-                            x: body.centerOffset.x + x,
-                            y: body.centerOffset.y + y - h
                         });
                 });
             }
@@ -77,7 +67,8 @@ export class GameScene extends Phaser.Scene {
                         'ball', 0);
                     this.ball.setCircle(10, {
                         friction: 0.01,
-                        frictionStatic: 0
+                        frictionStatic: 0,
+                        restitution: 0.75
                     });
                 }
             }
@@ -156,7 +147,7 @@ export class GameScene extends Phaser.Scene {
             // The closer the finger is from the ball, the stronger the force
             const minForceDistance = 50;
             const maxForceDistance = 200;
-            const pushAmount = (Phaser.Math.Clamp(Math.sqrt(deltaY * deltaY + deltaX * deltaX), minForceDistance, maxForceDistance) - minForceDistance)  / (maxForceDistance - minForceDistance);
+            const pushAmount = (Phaser.Math.Clamp(Math.sqrt(deltaY * deltaY + deltaX * deltaX), minForceDistance, maxForceDistance) - minForceDistance) / (maxForceDistance - minForceDistance);
             const push = Phaser.Math.Linear(minPush, maxPush, pushAmount);
             let xSpeed = Math.cos(angle) * push;
             let ySpeed = Math.sin(angle) * push;
@@ -214,14 +205,14 @@ export class GameScene extends Phaser.Scene {
         // Animate the force circle if it is showing
         if (this.forceCircle?.visible) {
             if (!this.pointerdown) {
-            //     const expandDuration = 150;
-            //     if (time - this.pointerStartTime < expandDuration) {
-            //         let lerp = (time - this.pointerStartTime) / expandDuration;
-            //         this.forceCircle?.setRadius(lerp * 100);
-            //         this.forceCircle?.setAlpha(1 - lerp);
-            //         this.forceCircle?.setStrokeStyle(Phaser.Math.Linear(this.forceCircleStartStrokeWidth, 0, lerp), 0x000088);
-            //     } else
-            //         this.forceCircle?.setVisible(false);
+                //     const expandDuration = 150;
+                //     if (time - this.pointerStartTime < expandDuration) {
+                //         let lerp = (time - this.pointerStartTime) / expandDuration;
+                //         this.forceCircle?.setRadius(lerp * 100);
+                //         this.forceCircle?.setAlpha(1 - lerp);
+                //         this.forceCircle?.setStrokeStyle(Phaser.Math.Linear(this.forceCircleStartStrokeWidth, 0, lerp), 0x000088);
+                //     } else
+                //         this.forceCircle?.setVisible(false);
             }
         }
     }
