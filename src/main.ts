@@ -1,7 +1,7 @@
 import 'phaser';
 import { GameScene } from './game';
 
-const DEBUG = true;
+const DEBUG = false;
 
 export class TitleScene extends Phaser.Scene {
     constructor() {
@@ -36,9 +36,9 @@ export class GameOverOverlayScene extends Phaser.Scene {
     }
 
     create() {
-        var text = this.add.text(0, 0, 'Game Over',
+        let text = this.add.text(0, 0, 'Game Over',
             {
-                fontSize: '30px',
+                fontSize: '60px',
                 color: 'red',
                 fontFamily: 'sans-serif',
                 fontStyle: 'bold',
@@ -53,6 +53,28 @@ export class GameOverOverlayScene extends Phaser.Scene {
         text.setInteractive();
         text.on('pointerdown', () => {
             this.scene.start('GameScene');
+        });
+
+        this.time.delayedCall(500, () => {
+            let text = this.add.text(0, 0, 'Tap to exit',
+                {
+                    fontSize: '20px',
+                    color: 'darkred',
+                    fontFamily: 'sans-serif',
+                    align: 'center',
+                    shadow: {
+                        blur: 5, color: 'rgba(128, 128, 128, 0.5)',
+                        fill: true
+                    }
+                }).setScrollFactor(0);
+            text.setPosition(this.game.scale.width / 2 - text.width / 2, this.game.scale.height - text.height - 20);
+
+
+            this.input.once('pointerup', () => {
+                this.scene.stop();
+                this.scene.stop('GameScene')
+                this.scene.start('title')
+            });
         });
     }
 }
