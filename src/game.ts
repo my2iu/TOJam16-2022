@@ -107,7 +107,7 @@ export class GameScene extends Phaser.Scene {
                     let body = this.makeStaticCollidingImageObjectFromTiledMap(objJson, tile);
                     //@ts-ignore
                     body.setOnCollideWith(this.ball, () => {
-                        this.scene.launch('gameover');
+                        this.scene.launch('gameover', { isWin: false });
                         this.instructionText?.setVisible(false);
                         this.scene.pause();
                     });

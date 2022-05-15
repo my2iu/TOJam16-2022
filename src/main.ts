@@ -28,15 +28,21 @@ export class TitleScene extends Phaser.Scene {
 }
 
 export class GameOverOverlayScene extends Phaser.Scene {
+    isWin = false;
+
     constructor() {
         super({ key: 'gameover' });
+    }
+
+    init(data: any) {
+        this.isWin = data.isWin;
     }
 
     preload() {
     }
 
     create() {
-        let text = this.add.text(0, 0, 'Game Over',
+        let text = this.add.text(0, 0, this.isWin ? "You Win!" : 'Game Over',
             {
                 fontSize: '60px',
                 color: 'red',
@@ -67,7 +73,14 @@ export class GameOverOverlayScene extends Phaser.Scene {
                         fill: true
                     }
                 }).setScrollFactor(0);
-            text.setPosition(this.game.scale.width / 2 - text.width / 2, this.game.scale.height - text.height - 20);
+            text.setPosition(this.game.scale.width / 2 - text.width / 2, this.game.scale.height / 2 - text.height / 2 + 75);
+            text.setAlpha(0);
+            this.tweens.add({
+                targets: text,
+                duration: 200,
+                repeat: 0,
+                alpha: 1
+            });
 
 
             this.input.once('pointerup', () => {
