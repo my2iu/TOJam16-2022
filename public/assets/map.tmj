@@ -363,7 +363,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -656,7 +655,13 @@
                      "visible":true,
                      "x":0,
                      "y":0
-                    }
+                    },
+                 "properties":[
+                        {
+                         "name":"isBumper",
+                         "type":"bool",
+                         "value":true
+                        }]
                 }, 
                 {
                  "id":4,
@@ -684,7 +689,13 @@
                      "visible":true,
                      "x":0,
                      "y":0
-                    }
+                    },
+                 "properties":[
+                        {
+                         "name":"isDeath",
+                         "type":"bool",
+                         "value":true
+                        }]
                 }],
          "tilewidth":800
         }],

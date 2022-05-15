@@ -9,12 +9,15 @@ export class ObjectTile {
     imagewidth: number;
     collision: CollisionObject[];
 
+    properties: any;
+
     constructor() {
         this.gid = 0;
         this.image = '';
         this.imagewidth = 0;
         this.imageheight = 0;
         this.collision = [];
+        this.properties = {};
     }
 }
 
@@ -158,6 +161,12 @@ export function loadTiledTileset(json: any, matter?: Phaser.Physics.Matter.Matte
                     tile.collision.push(collision);
                 }
             });
+            // Read in any custom properties
+            if (tileJson.properties) {
+                (tileJson.properties as { name: string, type: string, value: any }[]).forEach((prop) => {
+                    tile.properties[prop.name] = prop.value;
+                });
+            }
         }
         tiles[tile.gid] = tile;
     });
