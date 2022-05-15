@@ -32,7 +32,9 @@ export class GameScene extends Phaser.Scene {
         this.load.image('background.png', 'assets/background.png');
         this.load.image('ball', 'assets/images/ball.png');
         this.load.image('images/bottom.png', 'assets/images/bottom.png');
-        this.load.spritesheet('images/round.png', 'assets/images/round.png', {
+        this.load.image('images/flappybird.png', 'assets/images/flappybird.png');
+        this.load.image('images/required_goatonapole.png', 'assets/images/required_goatonapole.png');
+        this.load.spritesheet('images/round.png', 'assets/images/roundsheet.png', {
             frameWidth: 90
         });
         this.load.image('images/skull.png', 'assets/images/skull.png');
@@ -69,6 +71,10 @@ export class GameScene extends Phaser.Scene {
         let h = objJson.height as number;
         let w = objJson.width as number;
         let body = this.matter.add.sprite(x + w / 2, y - h / 2, tile.image);
+        if (w != tile.imagewidth || h != tile.imageheight) {
+            body.scaleX = w / tile.imagewidth;
+            body.scaleY = h / tile.imageheight;
+        }
         // Only take the first collision shape for now
         let collisionShape = tile.collision[0];
         let matterBody = tiled.makeBodyFromCollisionObject(x, y, w, h, collisionShape,
@@ -131,6 +137,14 @@ export class GameScene extends Phaser.Scene {
                         this.matter.world.once('beforeupdate', () => {
                             ballSprite.applyForce(vec.setLength(0.006));
                         });
+                    });
+                } else if (tile.properties.isWin) {
+                    let body = this.makeStaticCollidingImageObjectFromTiledMap(objJson, tile);
+                    //@ts-ignore
+                    body.setOnCollideWith(this.ball, () => {
+                        this.scene.launch('gameover', { isWin: true });
+                        this.instructionText?.setVisible(false);
+                        this.scene.pause();
                     });
                 } else {
                     this.makeStaticObjectFromTiledMap(objJson, tile);

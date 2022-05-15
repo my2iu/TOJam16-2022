@@ -60,11 +60,19 @@ export class CollisionCircle extends CollisionObject {
     centerY = 0;
     radius = 0;
 
-    constructor(x: number, y: number, w: number, h: number) {
+    // width and height of the image (not the circle) in case the image is
+    // scaled and we need to determine scaling factors for the circle
+    w = 0;
+    h = 0;
+
+    constructor(x: number, y: number, w: number, h: number,
+        imagewidth: number, imageheight: number) {
         super();
         this.centerX = (x + x + w) / 2;
         this.centerY = (y + y + h) / 2;
-        this.radius = (w + h) / 2;
+        this.radius = (w + h) / 4;
+        this.w = imagewidth;
+        this.h = imageheight;
     }
 }
 
@@ -108,8 +116,11 @@ export function makeBodyFromCollisionObject(
         //     });
         return body;
     } else if (obj instanceof CollisionCircle) {
+        let scaleX = w / obj.w;
+        let scaleY = h / obj.h;
+        let scale = (scaleX + scaleY) / 2
         //@ts-ignore
-        let body = matter.bodies.circle(x + w / 2, y - w / 2, w / 2, options);
+        let body = matter.bodies.circle(x + obj.centerX * scale, y - obj.centerY * scale, obj.radius * scale, options);
         return body;
     } else {
         //@ts-ignore
@@ -156,7 +167,8 @@ export function loadTiledTileset(json: any, matter?: Phaser.Physics.Matter.Matte
                 } else if (objJson.ellipse) {
                     let collision = new CollisionCircle(
                         objJson.x as number, objJson.y as number,
-                        objJson.width as number, objJson.height as number);
+                        objJson.width as number, objJson.height as number,
+                        tile.imagewidth, tile.imageheight);
                     tile.collision.push(collision);
                 } else {
                     let collision = new CollisionRectangle(
