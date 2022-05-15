@@ -1,6 +1,11 @@
 import 'phaser';
 import * as tiled from './tiled';
 
+type CustomTileProperties = {
+    isBumper: boolean,
+    isDeath: boolean
+}
+
 export class GameScene extends Phaser.Scene {
     scenery: MatterJS.BodyType | undefined;
     ball: Phaser.Physics.Matter.Sprite | undefined;
@@ -29,14 +34,14 @@ export class GameScene extends Phaser.Scene {
         this.load.image('images/skull.png', 'assets/images/skull.png');
     }
 
-    private makeStaticObjectFromTiledMap(objJson: any, tile: tiled.ObjectTile) {
+    private makeStaticObjectFromTiledMap(objJson: any, tile: tiled.ObjectTile<CustomTileProperties>) {
         // Create an image for each background object
         let gid = objJson.gid as number;
         let x = objJson.x as number;
         let y = objJson.y as number;
         let h = objJson.height as number;
         let w = objJson.width as number;
-        this.add.image(x + w / 2, y - h / 2, tile.image);
+        let body = this.add.image(x + w / 2, y - h / 2, tile.image);
 
         // Create a collision object too
         if (tile.collision) {
@@ -48,7 +53,26 @@ export class GameScene extends Phaser.Scene {
                     });
             });
         }
+        return body;
+    }
 
+    private makeStaticCollidingImageObjectFromTiledMap(objJson: any, tile: tiled.ObjectTile<CustomTileProperties>) {
+        // Create an image for each background object
+        let gid = objJson.gid as number;
+        let x = objJson.x as number;
+        let y = objJson.y as number;
+        let h = objJson.height as number;
+        let w = objJson.width as number;
+        let body = this.matter.add.image(x + w / 2, y - h / 2, tile.image);
+        // Only take the first collision shape for now
+        let collisionShape = tile.collision[0];
+        let matterBody = tiled.makeBodyFromCollisionObject(x, y, w, h, collisionShape,
+            this.matter,
+            {
+                isStatic: true
+            });
+        body.setBody(matterBody!);
+        return body;
     }
 
     private buildFromTiledMap(key: string) {
@@ -56,7 +80,7 @@ export class GameScene extends Phaser.Scene {
 
         // Get reference to image collection tilesets
         const backgroundImagesTiles = json['tilesets'][0];
-        const backgroundTiles: tiled.ObjectTile[] = tiled.loadTiledTileset(backgroundImagesTiles, this.matter);
+        const backgroundTiles: tiled.ObjectTile<CustomTileProperties>[] = tiled.loadTiledTileset(backgroundImagesTiles, this.matter);
 
         // Read background layer
         const backgroundLayer = json['layers'][0];
@@ -71,19 +95,21 @@ export class GameScene extends Phaser.Scene {
         (objectLayer.objects as any[]).forEach((objJson) => {
             if (objJson.point) {
                 if (objJson.name == 'StartPoint') {
-                    this.ball = this.matter.add.sprite(
-                        objJson.x as number, objJson.y as number,
-                        'ball', 0);
-                    this.ball.setCircle(10, {
-                        friction: 0.01,
-                        frictionStatic: 0,
-                        restitution: 0.75
-                    });
+                    this.ball?.setPosition(objJson.x as number, objJson.y as number);
                 }
             } else if (objJson.gid) {
                 let gid = objJson.gid as number;
                 let tile = backgroundTiles[gid];
-                this.makeStaticObjectFromTiledMap(objJson, tile);
+                if (tile.properties.isDeath) {
+                    let body = this.makeStaticCollidingImageObjectFromTiledMap(objJson, tile);
+                    //@ts-ignore
+                    body.setOnCollideWith(this.ball, () => {
+                        console.log('collision');
+
+                    });
+                } else {
+                    this.makeStaticObjectFromTiledMap(objJson, tile);
+                }
             }
         });
     }
@@ -94,6 +120,17 @@ export class GameScene extends Phaser.Scene {
         this.matter.world.setGravity(0, 1, 0.0005);
         this.matter.world.engine.positionIterations = 20;
         this.matter.world.engine.velocityIterations = 20;
+
+        // Create the initial player
+        this.ball = this.matter.add.sprite(
+            0, 0,
+            'ball', 0);
+        this.ball.setCircle(10, {
+            friction: 0.01,
+            frictionStatic: 0,
+            restitution: 0.75
+        });
+
 
         this.add.graphics();
 

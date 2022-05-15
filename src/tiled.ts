@@ -2,14 +2,14 @@
 
 import 'phaser';
 
-export class ObjectTile {
+export class ObjectTile<PropertiesType> {
     gid: number;
     image: string;
     imageheight: number;
     imagewidth: number;
     collision: CollisionObject[];
 
-    properties: any;
+    properties: PropertiesType | any;
 
     constructor() {
         this.gid = 0;
