@@ -1,3 +1,4 @@
+import { Events } from 'matter';
 import 'phaser';
 import * as tiled from './tiled';
 
@@ -65,7 +66,7 @@ export class GameScene extends Phaser.Scene {
         let y = objJson.y as number;
         let h = objJson.height as number;
         let w = objJson.width as number;
-        let body = this.matter.add.image(x + w / 2, y - h / 2, tile.image);
+        let body = this.matter.add.sprite(x + w / 2, y - h / 2, tile.image);
         // Only take the first collision shape for now
         let collisionShape = tile.collision[0];
         let matterBody = tiled.makeBodyFromCollisionObject(x, y, w, h, collisionShape,
@@ -73,7 +74,7 @@ export class GameScene extends Phaser.Scene {
             {
                 isStatic: true
             });
-        body.setBody(matterBody!);
+        body.setExistingBody(matterBody);
         return body;
     }
 
@@ -109,6 +110,21 @@ export class GameScene extends Phaser.Scene {
                         this.scene.launch('gameover');
                         this.instructionText?.setVisible(false);
                         this.scene.pause();
+                    });
+                } else if (tile.properties.isBumper) {
+                    let body = this.makeStaticCollidingImageObjectFromTiledMap(objJson, tile);
+                    //@ts-ignore
+                    body.setOnCollideWith(this.ball, (ball, pair) => {
+                        let ballSprite: Phaser.Physics.Matter.Sprite = ball.gameObject;
+                        let deltaX = ballSprite.x - body.x;
+                        let deltaY = ballSprite.y - body.y;
+                        let vec = new Phaser.Math.Vector2(deltaX, deltaY);
+                        // You can't apply forces inside a collision (because
+                        // forces are cleared right afterwards), so we need
+                        // to set an event to update the forces afterward
+                        this.matter.world.once('beforeupdate', () => {
+                            ballSprite.applyForce(vec.setLength(0.006));
+                        });
                     });
                 } else {
                     this.makeStaticObjectFromTiledMap(objJson, tile);

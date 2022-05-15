@@ -1,7 +1,7 @@
 import 'phaser';
 import { GameScene } from './game';
 
-const DEBUG = false;
+const DEBUG = true;
 
 export class TitleScene extends Phaser.Scene {
     constructor() {
