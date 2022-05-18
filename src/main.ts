@@ -50,7 +50,7 @@ export class GameOverOverlayScene extends Phaser.Scene {
                 fontStyle: 'bold',
                 align: 'center',
                 shadow: {
-                    blur: 5, color: 'rgba(128, 128, 128, 0.5)',
+                    blur: 8, color: 'rgba(255, 255, 255, 1)',
                     fill: true
                 }
             }).setScrollFactor(0);
@@ -69,7 +69,7 @@ export class GameOverOverlayScene extends Phaser.Scene {
                     fontFamily: 'sans-serif',
                     align: 'center',
                     shadow: {
-                        blur: 5, color: 'rgba(128, 128, 128, 0.5)',
+                        blur: 8, color: 'rgba(255, 255, 255, 1)',
                         fill: true
                     }
                 }).setScrollFactor(0);

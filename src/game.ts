@@ -221,7 +221,7 @@ export class GameScene extends Phaser.Scene {
                 color: 'black',
                 fontFamily: 'sans-serif',
                 align: 'center',
-                shadow: { blur: 5, color: 'rgba(128, 128, 128, 0.5)', fill: true }
+                shadow: { blur: 8, color: 'rgba(255, 255, 255, 1)', fill: true }
             }).setScrollFactor(0);
         this.instructionText.setPosition(240 - this.instructionText.width / 2, 100);
         this.time.delayedCall(5000, () => {
