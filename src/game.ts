@@ -47,6 +47,9 @@ export class GameScene extends Phaser.Scene {
     ball: Phaser.Physics.Matter.Sprite | undefined;
     instructionText: Phaser.GameObjects.Text | undefined;
 
+    bumperSound: Phaser.Sound.BaseSound | undefined;
+    loseSound: Phaser.Sound.BaseSound | undefined;
+
     // For showing feedback on 
     forceCircle: Phaser.GameObjects.Arc | undefined;
 
@@ -64,16 +67,12 @@ export class GameScene extends Phaser.Scene {
         // The default tiled loader doesn't handle collision data on
         // image collections properly, so we'll just load manually
         this.load.json('map', 'assets/map.tmj');
-        // this.load.image('background.png', 'assets/background.png');
         this.load.image('ball', 'assets/images/ball.png');
-        // this.load.image('images/bottom.png', 'assets/images/bottom.png');
-        // this.load.image('images/bumperforest.png', 'assets/images/bumperforest.png');
-        // this.load.image('images/flappybird.png', 'assets/images/flappybird.png');
-        // this.load.image('images/required_goatonapole.png', 'assets/images/required_goatonapole.png');
-        // this.load.spritesheet('images/round.png', 'assets/images/roundsheet.png', {
-        //     frameWidth: 90
-        // });
-        // this.load.image('images/skull.png', 'assets/images/skull.png');
+
+        this.load.audio('collideAudio', 'assets/audio/Hit_hurt 5.mp3');
+        this.load.audio('bumperAudio', 'assets/audio/Blip_select 40.mp3');
+        this.load.audio('hitAudio', 'assets/audio/woosh.mp3');
+        this.load.audio('loseAudio', 'assets/audio/lose.mp3');
     }
 
     private makeStaticObjectFromTiledMap(objJson: any, tile: tiled.ObjectTile<CustomTileProperties>) {
@@ -151,12 +150,14 @@ export class GameScene extends Phaser.Scene {
                     let body = this.makeStaticCollidingImageObjectFromTiledMap(objJson, tile);
                     //@ts-ignore
                     body.setOnCollideWith(this.ball, () => {
+                        this.loseSound?.play();
                         this.scene.launch('gameover', { isWin: false });
                         this.instructionText?.setVisible(false);
                         this.scene.pause();
                     });
                 } else if (tile.properties.isBumper) {
                     let body = this.makeStaticCollidingImageObjectFromTiledMap(objJson, tile);
+                    body.setData('isBumper', true);
                     //@ts-ignore
                     body.setOnCollideWith(this.ball, (ball, pair) => {
                         body.setFrame(1);
@@ -173,6 +174,7 @@ export class GameScene extends Phaser.Scene {
                         this.matter.world.once('beforeupdate', () => {
                             ballSprite.applyForce(vec.setLength(0.006));
                         });
+                        this.bumperSound?.play();
                     });
                 } else if (tile.properties.isWin) {
                     let body = this.makeStaticCollidingImageObjectFromTiledMap(objJson, tile);
@@ -191,6 +193,12 @@ export class GameScene extends Phaser.Scene {
 
 
     create() {
+        // Get sounds ready
+        const tapSound: Phaser.Sound.BaseSound = this.sound.add('hitAudio');
+        const collideSound: Phaser.Sound.BaseSound = this.sound.add('collideAudio');
+        this.bumperSound = this.sound.add('bumperAudio');
+        this.loseSound = this.sound.add('loseAudio');
+
         // Configure general physics parameters
         this.matter.world.setGravity(0, 1, 0.0005);
         this.matter.world.engine.positionIterations = 20;
@@ -204,6 +212,11 @@ export class GameScene extends Phaser.Scene {
             friction: 0.01,
             frictionStatic: 0,
             restitution: 0.75
+        });
+        this.ball.setOnCollide((pair: { bodyA: { gameObject?: Phaser.GameObjects.GameObject }, bodyB: { gameObject?: Phaser.GameObjects.GameObject } }) => {
+            if (pair.bodyA.gameObject?.getData('isBumper')) return;
+            if (pair.bodyB.gameObject?.getData('isBumper')) return;
+            collideSound.play();
         });
 
 
@@ -228,32 +241,7 @@ export class GameScene extends Phaser.Scene {
             this.instructionText?.setVisible(false);
         });
 
-        // Load in map data
-        // const map = this.make.tilemap({ key: 'map' });
-        // const backgroundImages = map.getTileset('BackgroundImages');
-        // map.getObjectLayer('Background').ob
-        // const backgroundObjects = map.createFromObjects('Background', {
-        //     name: 'Start'
-        // });
-        // backgroundObjects.forEach( obj => {
-        //     (obj as Phaser.GameObjects.Sprite).texture
-        // });
-        // const backgroundLayer = map.createLayer('Background', backgroundImages, 0, 0);
-
-
-        // Show some random things on the screen
-        // var text = this.add.text(0, 0, 'In Game', {fontSize: '30px', color: 'black', fontFamily: 'sans-serif'}).setScrollFactor(0);
-
-
-        // this.scenery = this.matter.add.fromVertices(250, 700,  
-        //    '20 700 300 750 450 700 300 760',
-        //     {
-        //         isStatic: true
-        //     });
-
-        // this.cameras.main.setBounds(-2000, -2000, 2000, 2000);
-        // this.cameras.main.startFollow(this.ball);
-
+        // Game input handling
         this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
             this.pointerdown = true;
             this.pointerStartTime = this.time.now
@@ -317,6 +305,8 @@ export class GameScene extends Phaser.Scene {
                     this.forceCircle?.setVisible(false);
                 }
             });
+
+            tapSound.play();
         });
     }
 
