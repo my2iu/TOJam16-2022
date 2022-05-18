@@ -7,6 +7,41 @@ type CustomTileProperties = {
     isDeath: boolean
 }
 
+// Special scene that will load in a tiled map and the referenced
+// resources in that map.
+export class GameTiledLoader extends Phaser.Scene {
+    constructor() {
+        super('GameSceneLoader');
+    }
+
+    preload() {
+        this.load.json('map', 'assets/map.tmj');
+
+        // We want to override the loading of one of the images with a spritesheet
+        // instead
+        this.load.spritesheet('images/round.png', 'assets/images/roundsheet.png', {
+            frameWidth: 90
+        });
+    }
+
+    findResourcesFromTiledMap(key: string) {
+        const json = this.cache.json.get(key);
+
+        // Get reference to image collection tilesets
+        const backgroundImagesTiles = json['tilesets'][0];
+        tiled.loadTiledTilesetImages(backgroundImagesTiles, this.load);
+    }
+
+    create() {
+        this.findResourcesFromTiledMap('map');
+        this.load.on(Phaser.Loader.Events.COMPLETE, () => {
+            this.scene.start('GameScene');
+        });
+        this.load.start();
+    }
+}
+
+
 export class GameScene extends Phaser.Scene {
     scenery: MatterJS.BodyType | undefined;
     ball: Phaser.Physics.Matter.Sprite | undefined;
@@ -29,16 +64,16 @@ export class GameScene extends Phaser.Scene {
         // The default tiled loader doesn't handle collision data on
         // image collections properly, so we'll just load manually
         this.load.json('map', 'assets/map.tmj');
-        this.load.image('background.png', 'assets/background.png');
+        // this.load.image('background.png', 'assets/background.png');
         this.load.image('ball', 'assets/images/ball.png');
-        this.load.image('images/bottom.png', 'assets/images/bottom.png');
-        this.load.image('images/bumperforest.png', 'assets/images/bumperforest.png');
-        this.load.image('images/flappybird.png', 'assets/images/flappybird.png');
-        this.load.image('images/required_goatonapole.png', 'assets/images/required_goatonapole.png');
-        this.load.spritesheet('images/round.png', 'assets/images/roundsheet.png', {
-            frameWidth: 90
-        });
-        this.load.image('images/skull.png', 'assets/images/skull.png');
+        // this.load.image('images/bottom.png', 'assets/images/bottom.png');
+        // this.load.image('images/bumperforest.png', 'assets/images/bumperforest.png');
+        // this.load.image('images/flappybird.png', 'assets/images/flappybird.png');
+        // this.load.image('images/required_goatonapole.png', 'assets/images/required_goatonapole.png');
+        // this.load.spritesheet('images/round.png', 'assets/images/roundsheet.png', {
+        //     frameWidth: 90
+        // });
+        // this.load.image('images/skull.png', 'assets/images/skull.png');
     }
 
     private makeStaticObjectFromTiledMap(objJson: any, tile: tiled.ObjectTile<CustomTileProperties>) {
@@ -171,8 +206,6 @@ export class GameScene extends Phaser.Scene {
             restitution: 0.75
         });
 
-
-        this.add.graphics();
 
         // Load up the map
         this.buildFromTiledMap('map');

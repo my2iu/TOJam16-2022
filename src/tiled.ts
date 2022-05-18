@@ -133,6 +133,13 @@ export function makeBodyFromCollisionObject(
     }
 }
 
+export function loadTiledTilesetImages(json: any, load: Phaser.Loader.LoaderPlugin) {
+    json['tiles'].forEach((tileJson: any) => {
+        const image: string = tileJson['image'];
+        load.image(image, 'assets/' + image);
+    });
+}
+
 export function loadTiledTileset(json: any, matter?: Phaser.Physics.Matter.MatterPhysics): any[] {
     const tiles: any[] = [];
     const firstgid: number = json['firstgid'];

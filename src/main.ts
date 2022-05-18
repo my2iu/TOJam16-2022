@@ -1,5 +1,5 @@
 import 'phaser';
-import { GameScene } from './game';
+import { GameScene, GameTiledLoader } from './game';
 
 const DEBUG = false;
 
@@ -16,7 +16,7 @@ export class TitleScene extends Phaser.Scene {
         let screen = this.add.image(240, 400, 'title', 0);
         screen.setInteractive();
         screen.on('pointerup', () => {
-            this.scene.start('GameScene');
+            this.scene.start('GameSceneLoader');
         });
         // var text = this.add.text(0, 0, 'Start', { fontSize: '30px', color: 'black', fontFamily: 'sans-serif' });
         // text.setInteractive();
@@ -56,10 +56,10 @@ export class GameOverOverlayScene extends Phaser.Scene {
             }).setScrollFactor(0);
         text.setPosition(this.game.scale.width / 2 - text.width / 2, this.game.scale.height / 2 - text.height / 2);
 
-        text.setInteractive();
-        text.on('pointerdown', () => {
-            this.scene.start('GameScene');
-        });
+        // text.setInteractive();
+        // text.on('pointerdown', () => {
+        //     this.scene.start('GameScene');
+        // });
 
         this.time.delayedCall(500, () => {
             let text = this.add.text(0, 0, 'Tap to exit',
@@ -111,7 +111,7 @@ const config: Phaser.Types.Core.GameConfig = {
             //enableSleeping: true
         }
     },
-    scene: [TitleScene, GameScene, GameOverOverlayScene]
+    scene: [TitleScene, GameTiledLoader, GameScene, GameOverOverlayScene]
 };
 
 const game = new Phaser.Game(config);
